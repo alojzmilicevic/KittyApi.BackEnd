@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+This file is used by the publish/package process of your Web project. You can customize the behavior of this process
+by editing this MSBuild file. In order to learn more about this please visit https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project>
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <EncryptedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAhAkEXzsf8kW3AXkHy2NwwAAAAAACAAAAAAAQZgAAAAEAACAAAAA1PvOm/87xfWeNC3mvaDlUfk4oX+HzNykFk2OeJZKbGAAAAAAOgAAAAAIAACAAAACOntArq5ltFMAzghogds826wlqfnF71lAEtE4XES5p4IAAAAAWEECE4nxZjp2YRQg1wrDGORcKfF5qripLTkk/1REZ6RlD2Cr2KtuRdlhdYKVTkCWypeiBq+bYzwk1qadeK6sz2MfHIkN1zSHE4sN2o3mafxMcuGCZ7HEIlq2WgC3GQs5s6ZRVq2S0fYrIO+hVMCTSeWOsDpFSilRoARqUdAO260AAAAAZ8qiBzB3fXDIH1Fst6k1dHQFPny44qEZ0gkUcEKg2sxYy0q4N+3DjVLd9CQeIcFn424do+rHhg4VCGqIyZKQ+</EncryptedPassword>
+    <History>True|2022-09-01T18:32:30.8402058Z;True|2022-09-01T20:27:31.1097771+02:00;True|2022-09-01T20:23:40.0721679+02:00;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+  <ItemGroup>
+    <EFMigrations Include="KittyAPI.Data.UserDbContext">
+      <Value>Data Source=tcp:kittyapidbserver.database.windows.net,1433%3bInitial Catalog=KittyAPI_db%3bUser Id=alomi136%40kittyapidbserver%3bPassword=#Alosql2030#</Value>
+    </EFMigrations>
+  </ItemGroup>
+</Project>
