@@ -7,6 +7,9 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using System.Net;
 using KittyAPI.Services;
+using KittyAPI.Hubs;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using KittyAPI.Errors;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -21,7 +24,8 @@ builder.Services.AddDbContext<DataContext>(options =>
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<IStreamService, StreamService>();
-
+builder.Services.AddTransient<IHubService, HubService>();
+builder.Services.AddSingleton<ProblemDetailsFactory, CustomProblemDetailsFactory>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
@@ -33,7 +37,7 @@ builder.Services.AddSwaggerGen(option =>
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
         BearerFormat = "JWT",
-        Scheme = "Bearer"
+        Scheme = "Bearer",
     });
     option.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
@@ -50,6 +54,7 @@ builder.Services.AddSwaggerGen(option =>
         }
     });
 });
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ClientPermission", policy =>
@@ -133,11 +138,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseExceptionHandler("/error");
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ChatHub>("/chatHub");
+app.UseExceptionHandler("/error");
 app.Run();

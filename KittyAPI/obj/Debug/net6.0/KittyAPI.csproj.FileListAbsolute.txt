@@ -81,3 +81,4 @@ C:\Users\alojz\source\repos\KittyAPI\KittyAPI\bin\Debug\net6.0\Microsoft.AspNetC
 C:\Users\alojz\source\repos\KittyAPI\KittyAPI\bin\Debug\net6.0\Microsoft.Azure.SignalR.Common.dll
 C:\Users\alojz\source\repos\KittyAPI\KittyAPI\bin\Debug\net6.0\Microsoft.Azure.SignalR.dll
 C:\Users\alojz\source\repos\KittyAPI\KittyAPI\bin\Debug\net6.0\Microsoft.Azure.SignalR.Protocols.dll
+C:\Users\alojz\source\repos\KittyAPI\KittyAPI\bin\Debug\net6.0\ErrorOr.dll

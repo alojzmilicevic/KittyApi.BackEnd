@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using KittyAPI.Dto;
+using KittyAPI.Errors;
 using KittyAPI.Models;
 using KittyAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -8,27 +9,31 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KittyAPI.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class UserController : ControllerBase
 {
     private IUserService _userService;
+    private readonly IAuthService _authService;
     private readonly DataContext _dbContext;
 
-    public UserController([FromServices] IUserService userService, DataContext dbContext)
+    public UserController([FromServices] IUserService userService, [FromServices] IAuthService authService, DataContext dbContext)
     {
         _userService = userService;
+        _authService = authService;
         _dbContext = dbContext;
-
     }
 
-    [Authorize]
     [HttpGet]
     public IActionResult GetUser()
     {
         var currentUser = _userService.GetUserFromContext(HttpContext);
 
-        if (currentUser == null) return NotFound("User doesnt exist");
+        if (currentUser == null)
+        {
+            throw new UserNotFoundException();
+        }
 
         return Ok(currentUser);
     }
@@ -45,7 +50,7 @@ public class UserController : ControllerBase
 
         if (userExists)
         {
-            return BadRequest("User already exists");
+            throw new UserExistsException();
         }
 
         PasswordService.ComputeHashSHA512(userRegister.Password, out byte[] passwordHash, out byte[] passwordSalt);
@@ -75,7 +80,7 @@ public class UserController : ControllerBase
 
         if (user == null)
         {
-            return BadRequest("User not found.");
+            throw new UserNotFoundException();
         }
 
         _dbContext.Users.Remove(user);
@@ -83,6 +88,50 @@ public class UserController : ControllerBase
         return Ok(await _dbContext.Users.ToListAsync());
     }
 
+    [HttpGet("check-username")]
+    public async Task<ActionResult<UserInfoSharedDto?>> CheckUsername(string username)
+    {
+        var userExists = await _dbContext.Users.AnyAsync(x => x.Username == username);
+
+        return Ok(userExists);
+    }
+
+    [HttpPost("change-username")]
+    public async Task<ActionResult> ChangeUsername(string username)
+    {
+        var currentUser = _userService.GetUserFromContext(HttpContext);
+
+        if (currentUser == null)
+        {
+            throw new UserNotFoundException();
+        }
+
+        var user = await _dbContext.Users.Where(u => u.Username == currentUser.Username).FirstOrDefaultAsync();
+
+        if (user == null)
+        {
+            throw new UserNotFoundException();
+        }
+
+        user.Username = username;
+        _dbContext.Update(user);
+        _dbContext.SaveChanges();
 
 
+        var token = _authService.GenerateToken(user);
+
+        return Ok(new RelogDto()
+        {
+            Token = token,
+            User = new UserDetailDto()
+            {
+                Username = user.Username,
+                UserId = user.UserId,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Role = user.Role
+            }
+        });
+    }
 }

@@ -1,4 +1,5 @@
 using KittyAPI.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
 namespace KittyApi.Hubs;
@@ -14,24 +15,28 @@ public sealed class MessageType
     public static string ReceiveMessage = "ReceiveMessage";
 }
 
-public class ChatHub : Hub
+public interface IStreamHub { 
+    Task ReceiveMessage(string user, object message);
+}
+
+public class ChatHub : Hub<IStreamHub>
 {
     private readonly IStreamService _streamService;
+    private readonly IUserService _userService;
 
-    public ChatHub(IStreamService streamService) { 
+    public ChatHub(IStreamService streamService, [FromServices] IUserService userService) { 
         _streamService = streamService;
-
-
+        _userService = userService;
     }
+
     public override async Task OnConnectedAsync()
     {
-        var userName = Context.User.Identity.Name;
         var clientType = Context?.GetHttpContext()?.Request?.Query["clientType"].ToString();
 
-        if(clientType == ClientType.Viewer || clientType == ClientType.Streamer)
+        if (clientType == ClientType.Viewer || clientType == ClientType.Streamer)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, clientType);
-            await Groups.AddToGroupAsync(Context.ConnectionId, userName);
+
         }
 
         await base.OnConnectedAsync();
@@ -39,13 +44,16 @@ public class ChatHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var userName = Context.User.Identity.Name;
         var clientType = Context?.GetHttpContext()?.Request?.Query["clientType"].ToString();
 
         if (clientType == ClientType.Viewer || clientType == ClientType.Streamer)
         {
+            if(clientType == ClientType.Viewer)
+            {
+                var user = _userService.GetUserFromContext(Context.GetHttpContext());
+                await _streamService.KickUserFromStream(user, 1);
+            }
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, clientType);
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, userName);
         }
 
         await base.OnDisconnectedAsync(exception);
@@ -53,21 +61,11 @@ public class ChatHub : Hub
 
     public async Task SendMessageToStreamer(string user, Object message)
     {
-        await Clients.Group(ClientType.Streamer).SendAsync(MessageType.ReceiveMessage, user, message);
+        await Clients.Group(ClientType.Streamer).ReceiveMessage(user, message);
     }
 
-    public async Task SendMessageToAllViewers(string user, Object message)
+    public async Task SendMessageToViewerBasedOnUserName(string from, string to, Object message)
     {
-        await Clients.Group(ClientType.Viewer).SendAsync(MessageType.ReceiveMessage, user, message);
-    }
-
-    public async Task SendMessageToViewer(string from, string to, Object message)
-    {
-        await Clients.Client(to).SendAsync(MessageType.ReceiveMessage, from, message);
-    }
-
-    public async Task SendMessageToViewerBasedOnId(string from, string to, Object message)
-    {
-        await Clients.Group(to).SendAsync(MessageType.ReceiveMessage, from, message);
+        await Clients.User(to).ReceiveMessage(from, message);
     }
 }

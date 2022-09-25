@@ -1,4 +1,5 @@
 using KittyAPI.Dto;
+using KittyAPI.Errors;
 using KittyAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,6 +29,6 @@ public class AuthController : ControllerBase
             return Ok(token);
         }
 
-        return NotFound("User not found");
+        throw new UserNotFoundException();
     }
 }

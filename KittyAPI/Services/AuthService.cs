@@ -28,6 +28,8 @@ public class AuthService : IAuthService
     {
         var user = await _dbContext.Users.Where(x => x.Email == userLogin.UserName).SingleOrDefaultAsync();
 
+        if (user == null) return null;
+
         var validPassword = PasswordService.VerifyHashSHA512(userLogin.Password, Convert.FromBase64String(user.PasswordHash), Convert.FromBase64String(user.PasswordSalt));
 
         if (!validPassword) return null;

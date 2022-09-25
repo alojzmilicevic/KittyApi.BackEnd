@@ -1,11 +1,11 @@
 ﻿using KittyApi.Hubs;
 using KittyAPI.Dto;
 using KittyAPI.Errors;
+using KittyAPI.Hubs;
 using KittyAPI.Models;
 using KittyAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 
 namespace KittyAPI.Controllers;
 
@@ -14,15 +14,15 @@ namespace KittyAPI.Controllers;
 [ApiController]
 public class StreamController : ControllerBase
 {
-    private readonly IHubContext<ChatHub> _hubContext;
     private readonly DataContext _dbContext;
+    private readonly IHubService _hubService;
     private readonly IUserService _userService;
     private readonly IStreamService _streamService;
 
-    public StreamController(IHubContext<ChatHub> hubContext, DataContext dbContext, 
+    public StreamController([FromServices] IHubService hubService, DataContext dbContext, 
         [FromServices] IUserService userService, [FromServices] IStreamService streamService)
     {
-        _hubContext = hubContext;
+        _hubService = hubService;
         _dbContext = dbContext;
         _userService = userService;
         _streamService = streamService;
@@ -32,63 +32,21 @@ public class StreamController : ControllerBase
     public async Task<IActionResult> JoinStreamAsync([FromBody] UserJoinStreamDto streamInfo)
     {
         var user = _userService.GetUserFromContext(HttpContext);
-        var stream = await _dbContext.Streams.Where(s => s.StreamId == streamInfo.StreamId).FirstOrDefaultAsync();
+        await checkIfStreamExistsAndIsRunning(streamInfo.StreamId);
 
-        if (stream == null)
-        {
-            throw new NoSuchStreamException();
-        }
+        var stream = await _streamService.AddUserToStream(user, streamInfo.StreamId);
 
-        if (user == null)
-        {
-            return NotFound("No such user");
-        }
-
-        try
-        {
-            await _dbContext.StreamUsers.AddAsync(new StreamUser()
-            {
-                StreamId = streamInfo.StreamId,
-                UserId = user.UserId,
-            });
-
-            await _dbContext.SaveChangesAsync();
-
-            var message = new SignalRMessageDto("incomingCall");
-            await _hubContext.Clients.Group(ClientType.Streamer).SendAsync(MessageType.ReceiveMessage, streamInfo.ConnectionId, message);
-            return Ok(_streamService.GetStreamInfo(streamInfo.StreamId));
-
-        } catch(DbUpdateException e)
-        {
-            return BadRequest("User is already in stream");
-        }
+        return Ok(stream);
     }
 
     [HttpPost("leave-stream")]
     public async Task<IActionResult> LeaveStreamAsync([FromBody] UserJoinStreamDto streamInfo)
     {
         var user = _userService.GetUserFromContext(HttpContext);
-        var stream = await _dbContext.Streams.Where(s => s.StreamId == streamInfo.StreamId).FirstOrDefaultAsync();
 
-        if (stream == null)
-        {
-            throw new NoSuchStreamException();
-        }
+        await checkIfStreamExistsAndIsRunning(streamInfo.StreamId);
 
-        if (user == null)
-        {
-            return NotFound("No such user");
-        }
-
-        _dbContext.StreamUsers.Remove(new StreamUser() {
-            StreamId = streamInfo.StreamId,
-            UserId = user.UserId,
-        });
-
-        _dbContext.SaveChanges();
-
-        var message = new SignalRMessageDto("hangup");
-        await _hubContext.Clients.Group(ClientType.Streamer).SendAsync(MessageType.ReceiveMessage, streamInfo.ConnectionId, message);
+        await _streamService.KickUserFromStream(user, streamInfo.StreamId);
 
         return Ok(_streamService.GetStreamInfo(streamInfo.StreamId));
     }
@@ -100,10 +58,60 @@ public class StreamController : ControllerBase
 
         if (streamInfo == null)
         {
-            return NotFound("No such stream " + streamId);
+            throw new StreamNotFoundException();
         }
 
         return Ok(streamInfo);
     }
 
+    [HttpPost("kick-user")]
+    public async Task<IActionResult> KickUser([FromBody] UserJoinStreamDto body)
+    {
+        var user = _userService.FindUser(body.UserId);
+        /*
+         if(isInStream(user)) {
+            await _streamService.KickUserFromStream(user, body.StreamId)
+            notify user that user has been kicked
+            notifyStreamer that user has been kicked
+         } else {
+            return Error to streamer
+        }
+         */
+        return Ok("");
+    }
+
+    [HttpPost("start-stream")]
+    public async Task<IActionResult> StartStream([FromBody] UserJoinStreamDto body)
+    {
+        // TODO: Notify all users stream has started
+        await _streamService.StartStream(body);
+
+        return Ok("Started stream");
+    }
+
+    
+    [HttpPost("end-stream")]
+    public async Task<IActionResult> EndStream([FromBody] UserJoinStreamDto body)
+    {
+        // TODO: Notify all users stream has ended
+        // Remove users from channel?
+        await _streamService.EndStream(body);
+
+        return Ok("Stream ended");
+    }
+
+    [ApiExplorerSettings(IgnoreApi = true)]
+    public async Task checkIfStreamExistsAndIsRunning(int streamId) {
+        var stream = await _dbContext.Streams.Where(s => s.StreamId == streamId).FirstOrDefaultAsync();
+
+        if (stream == null)
+        {
+            throw new StreamNotFoundException();
+        }
+
+        if(!stream.IsActive)
+        {
+            throw new StreamNotLiveException();
+        }
+    }
 }

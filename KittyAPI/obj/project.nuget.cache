@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "ZLzoRVIX5L1oGOSef9SB4IRrkx99mXFt4o2eB5VLURXjwPthHSomKI+Fww4GRjT5CWmB9x/Tlw0EtFqaa5YNBw==",
+  "dgSpecHash": "NDKfQ10gL/LCFlG+4O5qQhvcQUAc1GSny1XC0Ln/WuTyYaaeyAEKelivaiTam0Btb7pzmz80vmUN9gEuho30YQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\alojz\\source\\repos\\KittyAPI\\KittyAPI\\KittyAPI.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\alojz\\.nuget\\packages\\azure.core\\1.20.0\\azure.core.1.20.0.nupkg.sha512",
     "C:\\Users\\alojz\\.nuget\\packages\\azure.identity\\1.5.0\\azure.identity.1.5.0.nupkg.sha512",
+    "C:\\Users\\alojz\\.nuget\\packages\\erroror\\1.0.0\\erroror.1.0.0.nupkg.sha512",
     "C:\\Users\\alojz\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\alojz\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\6.0.7\\microsoft.aspnetcore.authentication.jwtbearer.6.0.7.nupkg.sha512",
     "C:\\Users\\alojz\\.nuget\\packages\\microsoft.aspnetcore.connections.abstractions\\3.0.0\\microsoft.aspnetcore.connections.abstractions.3.0.0.nupkg.sha512",
@@ -85,5 +86,12 @@
     "C:\\Users\\alojz\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512",
     "C:\\Users\\alojz\\.nuget\\packages\\system.windows.extensions\\5.0.0\\system.windows.extensions.5.0.0.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1803",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "You are running the 'restore' operation with an 'HTTP' source, 'http://api.nuget.org/v3/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source."
+    }
+  ]
 }

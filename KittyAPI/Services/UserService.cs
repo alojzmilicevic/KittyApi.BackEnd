@@ -11,15 +11,15 @@ public interface IUserService
 }
 public class UserService : IUserService
 {
-    private readonly DataContext _context;
-    public UserService(DataContext context)
+    private readonly DataContext _dbContext;
+    public UserService(DataContext dbContext)
     {
-        _context = context;
+        _dbContext = dbContext;
     }
 
     public User? FindUser(string id)
     {
-        return _context.Users.Find(id);
+        return _dbContext.Users.Find(id);
     }
 
     public UserDetailDto? GetUserFromContext(HttpContext context)

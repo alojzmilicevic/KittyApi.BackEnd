@@ -1,6 +1,4 @@
-﻿using KittyAPI.Models;
-
-namespace KittyAPI.Dto;
+﻿namespace KittyAPI.Dto;
 
 public class StreamInfoDto
 {
