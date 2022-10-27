@@ -6,7 +6,7 @@ namespace KittyAPI.Hubs;
 public interface IHubService {
     Task SendMessageToStreamer(string user, Object message);
     Task SendMessageToViewerBasedOnUserName(string user, string to, Object message);
-    Task SendMessageToViewersInStream(int streamId);
+    Task SendMessageToViewersInStream(string streamId);
 }
 
 public class HubService : IHubService {
@@ -26,7 +26,7 @@ public class HubService : IHubService {
         await _hubContext.Clients.User(to).ReceiveMessage(from, message);
     }
 
-    public async Task SendMessageToViewersInStream(int streamId)
+    public async Task SendMessageToViewersInStream(string streamId)
     {
         await _hubContext.Clients.Group(streamId.ToString()).ReceiveMessage(ClientType.Streamer, "Test.StreamEnded");
     }

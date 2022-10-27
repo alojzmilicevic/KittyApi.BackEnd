@@ -2,9 +2,9 @@
 
 public class StreamInfoDto
 {
-    public int StreamId { get; set; }
+    public string StreamId { get; set; }
+    public string StreamerId { get; set; }
     public string StreamTitle { get; set; }
     public bool isActive { get; set; }
-    
     public List<UserInfoSharedDto> Users { get; set; }
 }

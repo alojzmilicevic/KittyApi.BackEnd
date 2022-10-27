@@ -51,7 +51,7 @@ public class ChatHub : Hub<IStreamHub>
             if(clientType == ClientType.Viewer)
             {
                 var user = _userService.GetUserFromContext(Context.GetHttpContext());
-                await _streamService.KickUserFromStream(user, 1);
+                //await _streamService.KickUserFromStream(user, 1);
             }
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, clientType);
         }

@@ -2,7 +2,7 @@
 
 public class StreamUser
 {
-    public int StreamId { get; set; }
+    public string StreamId { get; set; }
     public Stream Stream { get; set; }
 
     

@@ -3,7 +3,6 @@ using KittyAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,11 +10,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KittyAPI.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220907104121_test3")]
-    partial class test3
+    partial class DataContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,11 +23,8 @@ namespace KittyAPI.Migrations
 
             modelBuilder.Entity("KittyAPI.Models.Stream", b =>
                 {
-                    b.Property<int>("StreamId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StreamId"), 1L, 1);
+                    b.Property<string>("StreamId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -39,12 +33,31 @@ namespace KittyAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("StreamerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("StreamId");
 
                     b.ToTable("Streams");
                 });
 
-            modelBuilder.Entity("KittyAPI.Models.UserModel", b =>
+            modelBuilder.Entity("KittyAPI.Models.StreamUser", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("StreamId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserId", "StreamId");
+
+                    b.HasIndex("StreamId");
+
+                    b.ToTable("StreamUsers");
+                });
+
+            modelBuilder.Entity("KittyAPI.Models.User", b =>
                 {
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -82,34 +95,33 @@ namespace KittyAPI.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("StreamUserModel", b =>
+            modelBuilder.Entity("KittyAPI.Models.StreamUser", b =>
                 {
-                    b.Property<int>("StreamsStreamId")
-                        .HasColumnType("int");
+                    b.HasOne("KittyAPI.Models.Stream", "Stream")
+                        .WithMany("Participants")
+                        .HasForeignKey("StreamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Property<string>("UsersUserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.HasOne("KittyAPI.Models.User", "User")
+                        .WithMany("Streams")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasKey("StreamsStreamId", "UsersUserId");
+                    b.Navigation("Stream");
 
-                    b.HasIndex("UsersUserId");
-
-                    b.ToTable("StreamUserModel");
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("StreamUserModel", b =>
+            modelBuilder.Entity("KittyAPI.Models.Stream", b =>
                 {
-                    b.HasOne("KittyAPI.Models.Stream", null)
-                        .WithMany()
-                        .HasForeignKey("StreamsStreamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Participants");
+                });
 
-                    b.HasOne("KittyAPI.Models.UserModel", null)
-                        .WithMany()
-                        .HasForeignKey("UsersUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+            modelBuilder.Entity("KittyAPI.Models.User", b =>
+                {
+                    b.Navigation("Streams");
                 });
 #pragma warning restore 612, 618
         }

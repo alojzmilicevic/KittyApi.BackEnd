@@ -2,9 +2,9 @@
 
 namespace KittyAPI.Dto;
 
-public class UserJoinStreamDto
+public class StreamUserDto
 {
     public string? UserId { get; set; }
     [Required]
-    public int StreamId { get; set; }
+    public string? StreamId { get; set; }
 }
