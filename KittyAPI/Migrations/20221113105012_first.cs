@@ -5,23 +5,23 @@
 namespace KittyAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class first : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Streams",
+                name: "Thumbnails",
                 columns: table => new
                 {
-                    StreamId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    StreamTitle = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    StreamerId = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ThumbnailName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ThumbnailPath = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Streams", x => x.StreamId);
+                    table.PrimaryKey("PK_Thumbnails", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -40,6 +40,32 @@ namespace KittyAPI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.UserId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Streams",
+                columns: table => new
+                {
+                    StreamId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    StreamTitle = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    StreamerUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ThumbnailId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Streams", x => x.StreamId);
+                    table.ForeignKey(
+                        name: "FK_Streams_Thumbnails_ThumbnailId",
+                        column: x => x.ThumbnailId,
+                        principalTable: "Thumbnails",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Streams_Users_StreamerUserId",
+                        column: x => x.StreamerUserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -67,6 +93,16 @@ namespace KittyAPI.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Streams_StreamerUserId",
+                table: "Streams",
+                column: "StreamerUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Streams_ThumbnailId",
+                table: "Streams",
+                column: "ThumbnailId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StreamUsers_StreamId",
                 table: "StreamUsers",
                 column: "StreamId");
@@ -80,6 +116,9 @@ namespace KittyAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "Streams");
+
+            migrationBuilder.DropTable(
+                name: "Thumbnails");
 
             migrationBuilder.DropTable(
                 name: "Users");

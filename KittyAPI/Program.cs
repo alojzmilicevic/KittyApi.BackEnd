@@ -10,6 +10,7 @@ using KittyAPI.Services;
 using KittyAPI.Hubs;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using KittyAPI.Errors;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -103,12 +104,15 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddSignalR();
 
 var app = builder.Build();
-
-
-if (args.Length == 1 && args[0].ToLower() == "seeddata")
+app.UseStaticFiles(new StaticFileOptions
 {
-    SeedData(app);
-}
+    FileProvider = new PhysicalFileProvider(
+           Path.Combine(builder.Environment.ContentRootPath, "Resources")),
+    RequestPath = "/Resources"
+});
+
+
+SeedData(app);
 
 void SeedData(IHost app)
 {
@@ -124,7 +128,7 @@ void SeedData(IHost app)
 
 app.Use(async (context, next) =>
 {
-    context.Request.Headers.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZ2l2ZW5uYW1lIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3VybmFtZSI6InN0cmluZyIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImM4ZTEzZTlmLWQxOTAtNGJkNS04N2E2LWQyY2M3MGEyZmIwZiIsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NzA3NiIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NzA3NiJ9.wJryxiIzbuIy4tDzjUDRQU5uvmIGqbTiAYMGCoGKSBY";
+    //context.Request.Headers.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZ2l2ZW5uYW1lIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3VybmFtZSI6InN0cmluZ3NvbiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6InN0cmluZ0lkIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo3MDc2IiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo3MDc2In0.5j8LUNoRWBwfmKKM0C5Y_GIYwN0Nka587NllhT1tRKM";
     await next();
 
     if (context.Response.StatusCode == (int)HttpStatusCode.Unauthorized)

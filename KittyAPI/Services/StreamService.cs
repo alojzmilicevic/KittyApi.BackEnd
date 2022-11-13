@@ -15,7 +15,6 @@ public interface IStreamService
     Task<StreamInfoDto?> AddUserToStream(UserDetailDto user, string streamId);
     public Task StartStream(StartStreamDto body, UserDetailDto user);
     public Task EndStream(string streamId);
-
     public Task<List<StreamInfoDto>> GetAllStreams();
 
 }
@@ -50,19 +49,24 @@ public class StreamService : IStreamService
 
     public async Task StartStream(StartStreamDto body, UserDetailDto user)
     {
-        var stream = await GetStreamFromDbContext(user.UserId);
+        var stream = _dbContext.Streams.Where(s => s.Streamer.UserId == user.UserId).SingleOrDefault();
         if (stream != null)
         {
             throw new StreamAlreadyLiveException();
         }
 
+
+        //TODO add error handling
+        var actualUser = await _dbContext.Users.FindAsync(user.UserId);
+        var thumbnail = await _dbContext.Thumbnails.FindAsync(body.ThumbnailId);
+
         stream = new Stream
         {
             StreamId = Guid.NewGuid().ToString(),
             IsActive = true,
-            StreamerId = user.UserId,
+            Streamer = actualUser,
             StreamTitle = body.StreamTitle,
-
+            Thumbnail = thumbnail,
         };
 
         _dbContext.Streams.Add(stream);
@@ -71,7 +75,7 @@ public class StreamService : IStreamService
 
     public async Task EndStream(string streamId)
     {
-        var stream = await GetStreamFromDbContext(streamId);
+        var stream = await _dbContext.Streams.Where(s => s.StreamId == streamId).FirstOrDefaultAsync();
 
         if (stream == null || !stream.IsActive)
         {
@@ -82,13 +86,6 @@ public class StreamService : IStreamService
         await _dbContext.SaveChangesAsync();
         //await _hubService.NotifyUsersInStream(body.StreamId);
 
-    }
-
-    private async Task<Stream> GetStreamFromDbContext(string streamId)
-    {
-        var stream = await _dbContext.Streams.Where(s => s.StreamId == streamId).FirstOrDefaultAsync();
-
-        return stream;
     }
 
     public async Task<StreamInfoDto?> AddUserToStream(UserDetailDto user, string streamId)
@@ -122,6 +119,9 @@ public class StreamService : IStreamService
             StreamId = p.StreamId,
             isActive = p.IsActive,
             StreamTitle = p.StreamTitle,
+            StreamerName = p.Streamer.FirstName + " " + p.Streamer.LastName,
+            StreamerUsername = p.Streamer.Username,
+            Thumbnail = p.Thumbnail,
             Users = p.Participants.Select(n => n.User).Select(n => new UserInfoSharedDto()
             {
                 FirstName = n.FirstName,
@@ -135,15 +135,19 @@ public class StreamService : IStreamService
 
     public async Task<List<StreamInfoDto>> GetAllStreams()
     {
+
         var streams = await _dbContext.Streams.Select(p => new StreamInfoDto()
         {
             StreamId = p.StreamId,
-            StreamerId = p.StreamerId,
+            StreamerName = p.Streamer.FirstName + " " + p.Streamer.LastName,
+            StreamerUsername = p.Streamer.Username,
+            Thumbnail = p.Thumbnail,
             isActive = p.IsActive,
             StreamTitle = p.StreamTitle,
 
         }).ToListAsync();
-
+        
         return streams;
+
     }
 }

@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KittyAPI.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220925132347_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20221113105012_first")]
+    partial class first
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,11 +36,17 @@ namespace KittyAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("StreamerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<string>("StreamerUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("ThumbnailId")
+                        .HasColumnType("int");
 
                     b.HasKey("StreamId");
+
+                    b.HasIndex("StreamerUserId");
+
+                    b.HasIndex("ThumbnailId");
 
                     b.ToTable("Streams");
                 });
@@ -58,6 +64,27 @@ namespace KittyAPI.Migrations
                     b.HasIndex("StreamId");
 
                     b.ToTable("StreamUsers");
+                });
+
+            modelBuilder.Entity("KittyAPI.Models.Thumbnail", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("ThumbnailName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ThumbnailPath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Thumbnails");
                 });
 
             modelBuilder.Entity("KittyAPI.Models.User", b =>
@@ -96,6 +123,23 @@ namespace KittyAPI.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("KittyAPI.Models.Stream", b =>
+                {
+                    b.HasOne("KittyAPI.Models.User", "Streamer")
+                        .WithMany()
+                        .HasForeignKey("StreamerUserId");
+
+                    b.HasOne("KittyAPI.Models.Thumbnail", "Thumbnail")
+                        .WithMany()
+                        .HasForeignKey("ThumbnailId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Streamer");
+
+                    b.Navigation("Thumbnail");
                 });
 
             modelBuilder.Entity("KittyAPI.Models.StreamUser", b =>

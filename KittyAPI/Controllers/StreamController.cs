@@ -4,6 +4,7 @@ using KittyAPI.Errors;
 using KittyAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using StreamUserDto = KittyAPI.Dto.StreamUserDto;
 
 namespace KittyAPI.Controllers;
 
