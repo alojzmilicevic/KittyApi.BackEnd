@@ -11,9 +11,11 @@ namespace KittyAPI.Controllers;
 public class AuthController : ControllerBase
 {
     private IAuthService _authService;
-    public AuthController([FromServices] IAuthService authService)
+    private IUserService _userService;
+    public AuthController([FromServices] IAuthService authService, [FromServices] IUserService userService)
     {
         _authService = authService;
+        _userService = userService;
     }
 
     [AllowAnonymous]
@@ -25,8 +27,14 @@ public class AuthController : ControllerBase
         if (user != null)
         {
             var token = _authService.GenerateToken(user);
+            var userDetail = _userService.GetUserById(user.UserId);
 
-            return Ok(token);
+            var response = new
+            {
+                token = token,
+                user = userDetail
+            };
+            return Ok(response);
         }
 
         throw new UserNotFoundException();

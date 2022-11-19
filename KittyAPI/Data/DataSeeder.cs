@@ -25,17 +25,17 @@ public class DataSeeder
                     FirstName = "Alojz",
                     LastName = "Milicevic",
                     Role = "Administrator",
-                    PasswordHash = "MFvfOBskejHs/KNaRZvEf8On3/qlI/JUPrlOznKr4oxHS15MMVnSENkV8xmxo3uI3Cu/GOHtQWKbjalnnNTrbA==", 
-                    PasswordSalt = "hZNSSOJ8Qqy3Iqp0G2p1exkPcWnWySD5A9qxahVbJ40rm37twvbM8k2AemfmMSjy04kQQBe0g+CF18PDr17hmoXEo3iCVdKNgWxAvr4guV+fLqyuTK0dcDR8Ai4tEy53AZzyEQHTbateHzwPDlx0fHgy6O/GH2ST/R64yLCfqrc=", 
+                    PasswordHash = "MFvfOBskejHs/KNaRZvEf8On3/qlI/JUPrlOznKr4oxHS15MMVnSENkV8xmxo3uI3Cu/GOHtQWKbjalnnNTrbA==",
+                    PasswordSalt = "hZNSSOJ8Qqy3Iqp0G2p1exkPcWnWySD5A9qxahVbJ40rm37twvbM8k2AemfmMSjy04kQQBe0g+CF18PDr17hmoXEo3iCVdKNgWxAvr4guV+fLqyuTK0dcDR8Ai4tEy53AZzyEQHTbateHzwPDlx0fHgy6O/GH2ST/R64yLCfqrc=",
                 },
                 new User()
                 {
                     UserId="almaId",
-                    Username = "almce", 
-                    Email = "alma", 
+                    Username = "almce",
+                    Email = "alma",
                     Role = "User",
-                    LastName = "Cederblad", 
-                    PasswordHash = "FDxRO4rMTxEmKu9YAhu929SLjYxwsPrg/uXJhUW11fE+cTlUbK+9mH07e1sf62kShOwUoSGVzbLjgXV85WQLoQ==", 
+                    LastName = "Cederblad",
+                    PasswordHash = "FDxRO4rMTxEmKu9YAhu929SLjYxwsPrg/uXJhUW11fE+cTlUbK+9mH07e1sf62kShOwUoSGVzbLjgXV85WQLoQ==",
                     PasswordSalt="aoQ2sK9yu92pKLv4OoLXW+12JD0pzjGEEzX01lWsKJdRXq83P+8ZrZD36v5397PVhygyPnZfLgV62LP6bbb8owPCDzPBrrAwI8S+UsCODX4Ku+bg7nc46uK3s0AIEMGItPZrH69hbDHehRkCU91uGKTBgwxINVuTB/21rcSvEQk=", FirstName = "Alma",
                 },
                 new User()
@@ -60,19 +60,23 @@ public class DataSeeder
             {
                 new Thumbnail()
                 {
-                    ThumbnailName = "Eating", ThumbnailPath = "/Resources/Images/eating-cat.jpg"
+                    ThumbnailName = "Cat Tree Cam", ThumbnailPath = "/Resources/Images/StreamTypes/tree.jpg"
                 },
                 new Thumbnail()
                 {
-                    ThumbnailName = "Sleeping", ThumbnailPath = "/Resources/Images/sleep-cat.jpg"
+                    ThumbnailName = "Food Cam", ThumbnailPath = "/Resources/Images/StreamTypes/eat.jpg"
                 },
                 new Thumbnail()
                 {
-                    ThumbnailName = "Tree", ThumbnailPath = "/Resources/Images/tree-cat.jpeg"
+                    ThumbnailName = "Sleep Cam", ThumbnailPath = "/Resources/Images/StreamTypes/sleep.jpg"
                 },
                 new Thumbnail()
                 {
-                    ThumbnailName = "Toilet", ThumbnailPath = "/Resources/Images/toilet-cat.png"
+                    ThumbnailName = "Toilet Cam", ThumbnailPath = "/Resources/Images/StreamTypes/wc.jpg"
+                },
+                new Thumbnail()
+                {
+                    ThumbnailName = "NotFound", ThumbnailPath = "/Resources/Images/404-cat.png"
                 },
             };
             _dbContext.Thumbnails.AddRange(thumbnails);

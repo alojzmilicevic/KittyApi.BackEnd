@@ -51,7 +51,7 @@ public class StreamController : ControllerBase
     [HttpGet("stream-info/{streamId}")]
     public async Task<IActionResult> StreamInfo(string streamId)
     {
-        var streamInfo = _streamService.GetStreamInfo(streamId);
+        var streamInfo = _streamService.GetStreamInfoBasedOnStreamer(streamId);
 
         if (streamInfo == null)
         {
@@ -92,9 +92,10 @@ public class StreamController : ControllerBase
         var user = _userService.GetUserFromContext(HttpContext);
 
         // TODO: Notify all users stream has started
-        await _streamService.StartStream(body, user);
+        var streamId = await _streamService.StartStream(body, user);
 
-        return Ok("Started stream");
+
+        return Ok(_streamService.GetStreamInfo(streamId));
     }
 
 

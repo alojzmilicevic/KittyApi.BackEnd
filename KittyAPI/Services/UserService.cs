@@ -1,4 +1,5 @@
 ﻿using KittyAPI.Dto;
+using KittyAPI.Errors;
 using KittyAPI.Models;
 using System.Security.Claims;
 
@@ -8,6 +9,7 @@ public interface IUserService
 {
     User? FindUser(string id);
     UserDetailDto? GetUserFromContext(HttpContext context);
+    UserDetailDto GetUserById(string userId);
 }
 public class UserService : IUserService
 {
@@ -41,4 +43,23 @@ public class UserService : IUserService
         };
     }
 
+    public UserDetailDto GetUserById(string id)
+    {
+        var user = FindUser(id);
+
+        if (user == null)
+        {
+            throw new UserNotFoundException();
+        }
+        
+        return new UserDetailDto()
+        {
+            Username = user.Username,
+            UserId = user.UserId,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Role = user.Role,
+        };
+    }
 }

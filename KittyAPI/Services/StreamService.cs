@@ -11,9 +11,10 @@ namespace KittyAPI.Services;
 public interface IStreamService
 {
     public StreamInfoDto? GetStreamInfo(string streamId);
+    public StreamInfoDto? GetStreamInfoBasedOnStreamer(string streamerId);
     Task KickUserFromStream(UserDetailDto user, string streamId);
     Task<StreamInfoDto?> AddUserToStream(UserDetailDto user, string streamId);
-    public Task StartStream(StartStreamDto body, UserDetailDto user);
+    public Task<string> StartStream(StartStreamDto body, UserDetailDto user);
     public Task EndStream(string streamId);
     public Task<List<StreamInfoDto>> GetAllStreams();
 
@@ -47,7 +48,7 @@ public class StreamService : IStreamService
 
     }
 
-    public async Task StartStream(StartStreamDto body, UserDetailDto user)
+    public async Task<string> StartStream(StartStreamDto body, UserDetailDto user)
     {
         var stream = _dbContext.Streams.Where(s => s.Streamer.UserId == user.UserId).SingleOrDefault();
         if (stream != null)
@@ -59,10 +60,10 @@ public class StreamService : IStreamService
         //TODO add error handling
         var actualUser = await _dbContext.Users.FindAsync(user.UserId);
         var thumbnail = await _dbContext.Thumbnails.FindAsync(body.ThumbnailId);
-
+        string streamId = Guid.NewGuid().ToString();
         stream = new Stream
         {
-            StreamId = Guid.NewGuid().ToString(),
+            StreamId = streamId,
             IsActive = true,
             Streamer = actualUser,
             StreamTitle = body.StreamTitle,
@@ -71,6 +72,7 @@ public class StreamService : IStreamService
 
         _dbContext.Streams.Add(stream);
         await _dbContext.SaveChangesAsync();
+        return streamId;
     }
 
     public async Task EndStream(string streamId)
@@ -133,6 +135,29 @@ public class StreamService : IStreamService
         return streamInfo;
     }
 
+    public StreamInfoDto? GetStreamInfoBasedOnStreamer(string streamerId)
+    {
+        var first = _dbContext.Streams.Include(s => s.Streamer);
+        var second = first.Where(s => s.Streamer.Username == streamerId);
+        var third = second.Select(p => new StreamInfoDto()
+        {
+            StreamId = p.StreamId,
+            isActive = p.IsActive,
+            StreamTitle = p.StreamTitle,
+            StreamerName = p.Streamer.FirstName + " " + p.Streamer.LastName,
+            StreamerUsername = p.Streamer.Username,
+            Thumbnail = p.Thumbnail,
+            Users = p.Participants.Select(n => n.User).Select(n => new UserInfoSharedDto()
+            {
+                FirstName = n.FirstName,
+                LastName = n.LastName,
+                Username = n.Username,
+            }).ToList()
+        }).FirstOrDefault();
+
+        return third;
+    }
+
     public async Task<List<StreamInfoDto>> GetAllStreams()
     {
 
@@ -146,7 +171,7 @@ public class StreamService : IStreamService
             StreamTitle = p.StreamTitle,
 
         }).ToListAsync();
-        
+
         return streams;
 
     }
