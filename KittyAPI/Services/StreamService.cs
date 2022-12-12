@@ -53,7 +53,7 @@ public class StreamService : IStreamService
         var stream = _dbContext.Streams.Where(s => s.Streamer.UserId == user.UserId).SingleOrDefault();
         if (stream != null)
         {
-            throw new StreamAlreadyLiveException();
+            await EndStream(stream.StreamId);
         }
 
 

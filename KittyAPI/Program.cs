@@ -11,9 +11,12 @@ using KittyAPI.Hubs;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using KittyAPI.Errors;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
+builder.Services.AddSignalR();
 
 builder.Services.AddControllers();
 builder.Services.AddTransient<DataSeeder>();
@@ -56,16 +59,17 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
-builder.Services.AddCors(options =>
+builder.Services.AddCors((Action<CorsOptions>)(options =>
 {
+    List<string> allowedOrigins = getAllowedOrigins();
+
     options.AddPolicy("ClientPermission", policy =>
     {
         policy.AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials()
-            .WithOrigins("https://localhost:3000", "http://localhost:3000", "https://192.168.50.115:3000", "http://192.168.50.115:3000", "https://192.168.50.121:3000", "http://192.168.50.121:3000", "http://127.0.0.1:3000", "https://127.0.0.1:3000");
+            .AllowAnyOrigin();
     });
-});
+}));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
@@ -101,16 +105,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
-builder.Services.AddSignalR();
-
 var app = builder.Build();
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(
-           Path.Combine(builder.Environment.ContentRootPath, "Resources")),
-    RequestPath = "/Resources"
-});
-
+app.UseStaticFiles();
 
 SeedData(app);
 
@@ -128,7 +124,7 @@ void SeedData(IHost app)
 
 app.Use(async (context, next) =>
 {
-    context.Request.Headers.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZ2l2ZW5uYW1lIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3VybmFtZSI6InN0cmluZ3NvbiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6InN0cmluZ0lkIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo3MDc2IiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo3MDc2In0.5j8LUNoRWBwfmKKM0C5Y_GIYwN0Nka587NllhT1tRKM";
+    //context.Request.Headers.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZ2l2ZW5uYW1lIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3VybmFtZSI6InN0cmluZ3NvbiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6InN0cmluZ0lkIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo3MDc2IiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo3MDc2In0.5j8LUNoRWBwfmKKM0C5Y_GIYwN0Nka587NllhT1tRKM";
     await next();
 
     if (context.Response.StatusCode == (int)HttpStatusCode.Unauthorized)
@@ -139,11 +135,13 @@ app.Use(async (context, next) =>
 app.UseCors("ClientPermission");
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI(c => {
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    c.RoutePrefix = string.Empty;
+});
+
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -152,3 +150,17 @@ app.MapControllers();
 app.MapHub<ChatHub>("/chatHub");
 app.UseExceptionHandler("/error");
 app.Run();
+
+static List<string> getAllowedOrigins()
+{
+    List<string> allowedClients = new List<string> { "localhost", "192.168.50.115", "192.168.50.71" };
+    List<string> allowedOrigins = new List<string> { };
+
+    allowedClients.ForEach(client =>
+    {
+        allowedOrigins.Add($"http://{client}:3000");
+        allowedOrigins.Add($"https://{client}:3000");
+    });
+    
+    return allowedOrigins;
+}

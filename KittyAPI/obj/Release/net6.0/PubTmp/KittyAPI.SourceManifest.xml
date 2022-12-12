@@ -1,5 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<sitemanifest>
-  <IisApp path="C:\Users\alojz\source\repos\KittyAPI\KittyAPI\obj\Release\net6.0\PubTmp\Out\" />
-  <dbfullsql path="C:\Users\alojz\source\repos\KittyAPI\KittyAPI\obj\Release\net6.0\PubTmp\EFSQLScripts\KittyAPI.Data.UserDbContext.sql" />
-</sitemanifest>
