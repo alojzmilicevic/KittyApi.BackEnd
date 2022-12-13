@@ -43,8 +43,7 @@ public class StreamService : IStreamService
         });
 
         _dbContext.SaveChanges();
-        var message = new SignalRMessageDto("hangup");
-        await _hubService.SendMessageToStreamer(user.UserId, message);
+        await _hubService.SendHangupMessage(user.UserId);
 
     }
 
@@ -55,7 +54,6 @@ public class StreamService : IStreamService
         {
             await EndStream(stream.StreamId);
         }
-
 
         //TODO add error handling
         var actualUser = await _dbContext.Users.FindAsync(user.UserId);
@@ -101,9 +99,7 @@ public class StreamService : IStreamService
             });
 
             await _dbContext.SaveChangesAsync();
-
-            var message = new SignalRMessageDto("incomingCall");
-            await _hubService.SendMessageToStreamer(user.UserId, message);
+            await _hubService.SendIncomingCallMessage(user.UserId);
 
             return GetStreamInfo(streamId);
 

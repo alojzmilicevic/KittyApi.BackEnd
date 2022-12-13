@@ -1,33 +1,35 @@
 ﻿using KittyApi.Hubs;
+using KittyAPI.Hubs.Messages;
 using Microsoft.AspNetCore.SignalR;
 
 namespace KittyAPI.Hubs;
 
-public interface IHubService {
-    Task SendMessageToStreamer(string user, Object message);
-    Task SendMessageToViewerBasedOnUserName(string user, string to, Object message);
-    Task SendMessageToViewersInStream(string streamId);
+public interface IHubService
+{
+    Task SendIncomingCallMessage(string userId);
+    Task SendHangupMessage(string userId);
 }
 
-public class HubService : IHubService {
+public class HubService : IHubService
+{
     private readonly IHubContext<ChatHub, IStreamHub> _hubContext;
 
-    public HubService(IHubContext<ChatHub, IStreamHub> hubContext) {
+    public HubService(IHubContext<ChatHub, IStreamHub> hubContext)
+    {
         _hubContext = hubContext;
     }
 
-    public async Task SendMessageToStreamer(string user, Object message)
+    public async Task SendIncomingCallMessage(string userId)
     {
-        await _hubContext.Clients.Group(ClientType.Streamer).ReceiveMessage(user, message);
+        var message = new IncomingCallMessage(userId);
+        
+        await _hubContext.Clients.Group(ClientType.Streamer).ReceiveMessage(message);
     }
 
-    public async Task SendMessageToViewerBasedOnUserName(string from, string to, Object message)
+    public async Task SendHangupMessage(string userId)
     {
-        await _hubContext.Clients.User(to).ReceiveMessage(from, message);
-    }
+        var message = new LeaveStreamMessage(userId);
 
-    public async Task SendMessageToViewersInStream(string streamId)
-    {
-        await _hubContext.Clients.Group(streamId.ToString()).ReceiveMessage(ClientType.Streamer, "Test.StreamEnded");
+        await _hubContext.Clients.Group(ClientType.Streamer).ReceiveMessage(message);
     }
 }

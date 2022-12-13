@@ -1,3 +1,5 @@
+using KittyAPI.Hubs;
+using KittyAPI.Hubs.Messages;
 using KittyAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -15,8 +17,9 @@ public sealed class MessageType
     public static string ReceiveMessage = "ReceiveMessage";
 }
 
-public interface IStreamHub { 
-    Task ReceiveMessage(string user, object message);
+public interface IStreamHub
+{
+    Task ReceiveMessage(StreamHubMessage message);
 }
 
 public class ChatHub : Hub<IStreamHub>
@@ -24,7 +27,8 @@ public class ChatHub : Hub<IStreamHub>
     private readonly IStreamService _streamService;
     private readonly IUserService _userService;
 
-    public ChatHub(IStreamService streamService, [FromServices] IUserService userService) { 
+    public ChatHub(IStreamService streamService, [FromServices] IUserService userService)
+    {
         _streamService = streamService;
         _userService = userService;
     }
@@ -48,7 +52,7 @@ public class ChatHub : Hub<IStreamHub>
 
         if (clientType == ClientType.Viewer || clientType == ClientType.Streamer)
         {
-            if(clientType == ClientType.Viewer)
+            if (clientType == ClientType.Viewer)
             {
                 var user = _userService.GetUserFromContext(Context.GetHttpContext());
                 //await _streamService.KickUserFromStream(user, 1);
@@ -59,13 +63,18 @@ public class ChatHub : Hub<IStreamHub>
         await base.OnDisconnectedAsync(exception);
     }
 
-    public async Task SendMessageToStreamer(string user, Object message)
+    public async Task SendOfferMessage(OfferMessage message)
     {
-        await Clients.Group(ClientType.Streamer).ReceiveMessage(user, message);
+        await Clients.User(message.Receiver).ReceiveMessage(message);
     }
 
-    public async Task SendMessageToViewerBasedOnUserName(string from, string to, Object message)
+    public async Task SendAnswerMessage(AnswerMessage message)
     {
-        await Clients.User(to).ReceiveMessage(from, message);
+        await Clients.Group(ClientType.Streamer).ReceiveMessage(message);
+    }
+
+    public async Task SendIceCandidateMessage(IceCandidateMessage message)
+    {
+        await Clients.User(message.Receiver).ReceiveMessage(message);
     }
 }

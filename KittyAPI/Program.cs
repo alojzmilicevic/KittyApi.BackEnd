@@ -10,7 +10,6 @@ using KittyAPI.Services;
 using KittyAPI.Hubs;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using KittyAPI.Errors;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 
 
