@@ -1,20 +1,18 @@
 using KittyAPI.Errors;
 using KittyAPI.Hubs.Messages;
-using KittyAPI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
 namespace KittyApi.Hubs;
 
 public sealed class ClientType
 {
-    public static string Viewer = "viewer";
-    public static string Streamer = "streamer";
+    public const string Viewer = "viewer";
+    public const string Streamer = "streamer";
 }
 
 public sealed class MessageType
 {
-    public static string ReceiveMessage = "ReceiveMessage";
+    public const string ReceiveMessage = "ReceiveMessage";
 }
 
 public interface IStreamHub
@@ -26,13 +24,6 @@ public interface IStreamHub
 
 public class ChatHub : Hub<IStreamHub>
 {
-    private readonly IUserService _userService;
-
-    public ChatHub([FromServices] IUserService userService)
-    {
-        _userService = userService;
-    }
-
     public override async Task OnConnectedAsync()
     {
         var clientType = Context?.GetHttpContext()?.Request?.Query["clientType"].ToString();

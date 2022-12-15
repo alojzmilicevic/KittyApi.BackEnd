@@ -9,7 +9,7 @@ public class ErrorsController : ControllerBase
     [Route("/error")]
     public IActionResult Error()
     {
-        Exception? exception = HttpContext.Features.Get<IExceptionHandlerFeature>().Error;
+        Exception exception = HttpContext.Features.Get<IExceptionHandlerFeature>().Error;
 
         int statusCode = StatusCodes.Status500InternalServerError;
         string message = "Unknown error occured";

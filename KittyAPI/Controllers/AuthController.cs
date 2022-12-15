@@ -31,7 +31,7 @@ public class AuthController : ControllerBase
 
             var response = new
             {
-                token = token,
+                token,
                 user = userDetail
             };
             return Ok(response);

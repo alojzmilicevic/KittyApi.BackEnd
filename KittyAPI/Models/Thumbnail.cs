@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
-
-namespace KittyAPI.Models;
+﻿namespace KittyAPI.Models;
 
 public class Thumbnail
 {

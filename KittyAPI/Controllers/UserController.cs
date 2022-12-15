@@ -43,9 +43,6 @@ public class UserController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegisterDto userRegister)
     {
-        // TODO Check if password format is ok 
-        // TODO check if email is a real email
-
         var userExists = await _dbContext.Users.AnyAsync(x => x.Email == userRegister.Email || x.Username == userRegister.Username);
 
         if (userExists)
@@ -89,7 +86,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("check-username")]
-    public async Task<ActionResult<UserInfoSharedDto?>> CheckUsername(string username)
+    public async Task<ActionResult<UserInfoSharedDto>> CheckUsername(string username)
     {
         var userExists = await _dbContext.Users.AnyAsync(x => x.Username == username);
 
@@ -116,7 +113,6 @@ public class UserController : ControllerBase
         user.Username = username;
         _dbContext.Update(user);
         _dbContext.SaveChanges();
-
 
         var token = _authService.GenerateToken(user);
 

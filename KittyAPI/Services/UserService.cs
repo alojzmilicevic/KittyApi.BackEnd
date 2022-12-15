@@ -7,8 +7,8 @@ namespace KittyAPI.Services;
 
 public interface IUserService
 {
-    User? FindUser(string id);
-    UserDetailDto? GetUserFromContext(HttpContext context);
+    User FindUser(string id);
+    UserDetailDto GetUserFromContext(HttpContext context);
     UserDetailDto GetUserById(string userId);
 }
 public class UserService : IUserService
@@ -19,12 +19,12 @@ public class UserService : IUserService
         _dbContext = dbContext;
     }
 
-    public User? FindUser(string id)
+    public User FindUser(string id)
     {
         return _dbContext.Users.Find(id);
     }
 
-    public UserDetailDto? GetUserFromContext(HttpContext context)
+    public UserDetailDto GetUserFromContext(HttpContext context)
     {
         var identity = context.User.Identity as ClaimsIdentity;
 

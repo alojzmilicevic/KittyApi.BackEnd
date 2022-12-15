@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace KittyAPI.Dto.Resources;
+﻿namespace KittyAPI.Dto.Resources;
 
 public class ThumbnailDto
 {

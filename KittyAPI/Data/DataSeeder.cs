@@ -60,23 +60,23 @@ public class DataSeeder
             {
                 new Thumbnail()
                 {
-                    ThumbnailName = "Cat Tree Cam", ThumbnailPath = "/Resources/Images/StreamTypes/tree.jpg"
+                    ThumbnailName = "Cat Tree Cam", ThumbnailPath = "/images/stream-types/tree.jpg"
                 },
                 new Thumbnail()
                 {
-                    ThumbnailName = "Food Cam", ThumbnailPath = "/Resources/Images/StreamTypes/eat.jpg"
+                    ThumbnailName = "Food Cam", ThumbnailPath = "/images/stream-types/eat.jpg"
                 },
                 new Thumbnail()
                 {
-                    ThumbnailName = "Sleep Cam", ThumbnailPath = "/Resources/Images/StreamTypes/sleep.jpg"
+                    ThumbnailName = "Sleep Cam", ThumbnailPath = "/images/stream-types/sleep.jpg"
                 },
                 new Thumbnail()
                 {
-                    ThumbnailName = "Toilet Cam", ThumbnailPath = "/Resources/Images/StreamTypes/wc.jpg"
+                    ThumbnailName = "Toilet Cam", ThumbnailPath = "/images/stream-types/wc.jpg"
                 },
                 new Thumbnail()
                 {
-                    ThumbnailName = "NotFound", ThumbnailPath = "/Resources/Images/404-cat.png"
+                    ThumbnailName = "NotFound", ThumbnailPath = "/images/stream-types/404-cat.png"
                 },
             };
             _dbContext.Thumbnails.AddRange(thumbnails);

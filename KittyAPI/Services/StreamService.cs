@@ -55,7 +55,6 @@ public class StreamService : IStreamService
             await EndStream(stream.StreamId);
         }
 
-        //TODO add error handling
         var actualUser = await _dbContext.Users.FindAsync(user.UserId);
         if (actualUser == null) throw new UserNotFoundException();
         
@@ -117,7 +116,7 @@ public class StreamService : IStreamService
         var streamInfo = _dbContext.Streams.Where(s => s.StreamId == streamId).Select(p => new StreamInfoDto()
         {
             StreamId = p.StreamId,
-            isActive = p.IsActive,
+            IsActive = p.IsActive,
             StreamTitle = p.StreamTitle,
             StreamerName = p.Streamer.FirstName + " " + p.Streamer.LastName,
             StreamerUsername = p.Streamer.Username,
@@ -140,7 +139,7 @@ public class StreamService : IStreamService
         var streamInfoResult = withStream.Select(p => new StreamInfoDto()
         {
             StreamId = p.StreamId,
-            isActive = p.IsActive,
+            IsActive = p.IsActive,
             StreamTitle = p.StreamTitle,
             StreamerName = p.Streamer.FirstName + " " + p.Streamer.LastName,
             StreamerUsername = p.Streamer.Username,
@@ -165,7 +164,7 @@ public class StreamService : IStreamService
             StreamerName = p.Streamer.FirstName + " " + p.Streamer.LastName,
             StreamerUsername = p.Streamer.Username,
             Thumbnail = p.Thumbnail,
-            isActive = p.IsActive,
+            IsActive = p.IsActive,
             StreamTitle = p.StreamTitle,
 
         }).ToListAsync();

@@ -29,7 +29,7 @@ public class StreamController : ControllerBase
         var user = _userService.GetUserFromContext(HttpContext);
         if (user == null) throw new UserNotFoundException();
 
-        await checkIfStreamExistsAndIsRunning(streamId);
+        await CheckIfStreamExistsAndIsRunning(streamId);
 
         var stream = await _streamService.AddUserToStream(user, streamId);
 
@@ -42,7 +42,7 @@ public class StreamController : ControllerBase
         var user = _userService.GetUserFromContext(HttpContext);
         if (user == null) throw new UserNotFoundException();
 
-        await checkIfStreamExistsAndIsRunning(streamId);
+        await CheckIfStreamExistsAndIsRunning(streamId);
 
         await _streamService.KickUserFromStream(user, streamId);
 
@@ -94,7 +94,7 @@ public class StreamController : ControllerBase
     }
 
     [ApiExplorerSettings(IgnoreApi = true)]
-    public async Task checkIfStreamExistsAndIsRunning(string streamId)
+    public async Task CheckIfStreamExistsAndIsRunning(string streamId)
     {
         var stream = await _dbContext.Streams.Where(s => s.StreamId == streamId).FirstOrDefaultAsync();
 

@@ -8,7 +8,7 @@ public class StreamInfoDto
     public string StreamTitle { get; set; }
     public string StreamerName { get; set; }
     public string StreamerUsername { get; set; }
-    public bool isActive { get; set; }
+    public bool IsActive { get; set; }
     public List<UserInfoSharedDto> Users { get; set; }
     public Thumbnail Thumbnail { get; set; }
 }

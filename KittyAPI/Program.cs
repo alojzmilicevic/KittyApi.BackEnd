@@ -10,20 +10,17 @@ using KittyAPI.Services;
 using KittyAPI.Hubs;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using KittyAPI.Errors;
-using Microsoft.AspNetCore.Cors.Infrastructure;
-
 
 var builder = WebApplication.CreateBuilder(args);
+
 // Add services to the container.
 builder.Services.AddSignalR();
-
 builder.Services.AddControllers();
 builder.Services.AddTransient<DataSeeder>();
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<IStreamService, StreamService>();
@@ -53,12 +50,12 @@ builder.Services.AddSwaggerGen(option =>
                     Id="Bearer",
                 }
             },
-            new string[]{}
+            Array.Empty<string>()
         }
     });
 });
 
-builder.Services.AddCors((Action<CorsOptions>)(options =>
+builder.Services.AddCors(options =>
 {
     List<string> allowedOrigins = getAllowedOrigins();
 
@@ -68,7 +65,7 @@ builder.Services.AddCors((Action<CorsOptions>)(options =>
             .AllowAnyMethod()
             .AllowAnyOrigin();
     });
-}));
+});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
@@ -120,10 +117,8 @@ void SeedData(IHost app)
     }
 }
 
-
 app.Use(async (context, next) =>
 {
-    //context.Request.Headers.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZ2l2ZW5uYW1lIjoic3RyaW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3VybmFtZSI6InN0cmluZ3NvbiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlVzZXIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6InN0cmluZ0lkIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo3MDc2IiwiYXVkIjoiaHR0cDovL2xvY2FsaG9zdDo3MDc2In0.5j8LUNoRWBwfmKKM0C5Y_GIYwN0Nka587NllhT1tRKM";
     await next();
 
     if (context.Response.StatusCode == (int)HttpStatusCode.Unauthorized)
@@ -132,15 +127,11 @@ app.Use(async (context, next) =>
     }
 });
 app.UseCors("ClientPermission");
-
-// Configure the HTTP request pipeline.
-
 app.UseSwagger();
 app.UseSwaggerUI(c => {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "KittyAPI V1");
     c.RoutePrefix = string.Empty;
 });
-
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
@@ -152,8 +143,8 @@ app.Run();
 
 static List<string> getAllowedOrigins()
 {
-    List<string> allowedClients = new List<string> { "localhost", "192.168.50.115", "192.168.50.71" };
-    List<string> allowedOrigins = new List<string> { };
+    List<string> allowedClients = new() { "localhost", "192.168.50.115", "192.168.50.71" };
+    List<string> allowedOrigins = new() { };
 
     allowedClients.ForEach(client =>
     {

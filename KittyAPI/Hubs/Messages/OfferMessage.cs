@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography.X509Certificates;
-
-namespace KittyAPI.Hubs.Messages;
+﻿namespace KittyAPI.Hubs.Messages;
 
 public class OfferMessage : StreamHubMessage
 {
