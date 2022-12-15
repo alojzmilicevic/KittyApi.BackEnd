@@ -1,4 +1,4 @@
-using KittyAPI.Hubs;
+using KittyAPI.Errors;
 using KittyAPI.Hubs.Messages;
 using KittyAPI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -20,16 +20,16 @@ public sealed class MessageType
 public interface IStreamHub
 {
     Task ReceiveMessage(StreamHubMessage message);
+
+    Task ReceiveMessage(StreamsUpdatedMessage message);
 }
 
 public class ChatHub : Hub<IStreamHub>
 {
-    private readonly IStreamService _streamService;
     private readonly IUserService _userService;
 
-    public ChatHub(IStreamService streamService, [FromServices] IUserService userService)
+    public ChatHub([FromServices] IUserService userService)
     {
-        _streamService = streamService;
         _userService = userService;
     }
 
@@ -46,18 +46,19 @@ public class ChatHub : Hub<IStreamHub>
         await base.OnConnectedAsync();
     }
 
-    public override async Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception exception)
     {
         var clientType = Context?.GetHttpContext()?.Request?.Query["clientType"].ToString();
 
         if (clientType == ClientType.Viewer || clientType == ClientType.Streamer)
         {
-            if (clientType == ClientType.Viewer)
+            if (Context != null && Context.ConnectionId != null)
             {
-                var user = _userService.GetUserFromContext(Context.GetHttpContext());
-                //await _streamService.KickUserFromStream(user, 1);
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, clientType);
+            } else
+            {
+                throw new WebsocketError();
             }
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, clientType);
         }
 
         await base.OnDisconnectedAsync(exception);

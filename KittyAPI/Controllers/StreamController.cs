@@ -1,10 +1,8 @@
-﻿using KittyAPI.Dto;
-using KittyAPI.Dto.Stream;
+﻿using KittyAPI.Dto.Stream;
 using KittyAPI.Errors;
 using KittyAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using StreamUserDto = KittyAPI.Dto.StreamUserDto;
 
 namespace KittyAPI.Controllers;
 
@@ -29,6 +27,8 @@ public class StreamController : ControllerBase
     public async Task<IActionResult> JoinStreamAsync(string streamId)
     {
         var user = _userService.GetUserFromContext(HttpContext);
+        if (user == null) throw new UserNotFoundException();
+
         await checkIfStreamExistsAndIsRunning(streamId);
 
         var stream = await _streamService.AddUserToStream(user, streamId);
@@ -40,6 +40,7 @@ public class StreamController : ControllerBase
     public async Task<IActionResult> LeaveStreamAsync(string streamId)
     {
         var user = _userService.GetUserFromContext(HttpContext);
+        if (user == null) throw new UserNotFoundException();
 
         await checkIfStreamExistsAndIsRunning(streamId);
 
@@ -49,7 +50,7 @@ public class StreamController : ControllerBase
     }
 
     [HttpGet("stream-info/{streamId}")]
-    public async Task<IActionResult> StreamInfo(string streamId)
+    public StreamInfoDto StreamInfo(string streamId)
     {
         var streamInfo = _streamService.GetStreamInfoBasedOnStreamer(streamId);
 
@@ -58,7 +59,7 @@ public class StreamController : ControllerBase
             throw new StreamNotFoundException();
         }
 
-        return Ok(streamInfo);
+        return streamInfo;
     }
 
     [HttpGet("stream-info")]
@@ -69,31 +70,14 @@ public class StreamController : ControllerBase
         return Ok(streams);
     }
 
-    [HttpPost("kick-user")]
-    public async Task<IActionResult> KickUser([FromBody] StreamUserDto body)
-    {
-
-        var user = _userService.FindUser(body.UserId);
-        /*
-         if(isInStream(user)) {
-            await _streamService.KickUserFromStream(user, body.StreamId)
-            notify user that user has been kicked
-            notifyStreamer that user has been kicked
-         } else {
-            return Error to streamer
-        }
-         */
-        return Ok("");
-    }
-
     [HttpPost("start-stream")]
     public async Task<IActionResult> StartStream([FromBody] StartStreamDto body)
     {
         var user = _userService.GetUserFromContext(HttpContext);
 
-        // TODO: Notify all users stream has started
-        var streamId = await _streamService.StartStream(body, user);
+        if (user == null) throw new UserNotFoundException();
 
+        var streamId = await _streamService.StartStream(body, user);
 
         return Ok(_streamService.GetStreamInfo(streamId));
     }

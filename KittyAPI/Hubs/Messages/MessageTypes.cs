@@ -7,4 +7,5 @@ public class MessageTypes
     public const string IceCandidate = "iceCandidate";
     public const string Answer = "answer";
     public const string ViewerLeft = "hangup";
+    public const string StreamsUpdated = "streamsUpdated";
 }

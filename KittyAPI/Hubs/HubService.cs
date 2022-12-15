@@ -1,4 +1,5 @@
 ﻿using KittyApi.Hubs;
+using KittyAPI.Dto.Stream;
 using KittyAPI.Hubs.Messages;
 using Microsoft.AspNetCore.SignalR;
 
@@ -8,6 +9,7 @@ public interface IHubService
 {
     Task SendIncomingCallMessage(string userId);
     Task SendHangupMessage(string userId);
+    Task SendStreamsUpdatedMessage(List<StreamInfoDto> streams);
 }
 
 public class HubService : IHubService
@@ -22,7 +24,7 @@ public class HubService : IHubService
     public async Task SendIncomingCallMessage(string userId)
     {
         var message = new IncomingCallMessage(userId);
-        
+
         await _hubContext.Clients.Group(ClientType.Streamer).ReceiveMessage(message);
     }
 
@@ -31,5 +33,12 @@ public class HubService : IHubService
         var message = new LeaveStreamMessage(userId);
 
         await _hubContext.Clients.Group(ClientType.Streamer).ReceiveMessage(message);
+    }
+
+    public async Task SendStreamsUpdatedMessage(List<StreamInfoDto> streams)
+    {
+        var message = new StreamsUpdatedMessage(streams);
+
+        await _hubContext.Clients.Group(ClientType.Viewer).ReceiveMessage(message);
     }
 }
