@@ -49,22 +49,25 @@ public class StreamService : IStreamService
 
     public async Task<string> StartStream(StartStreamDto body, UserDetailDto user)
     {
-        var stream = _dbContext.Streams.Where(s => s.Streamer.UserId == user.UserId).SingleOrDefault();
-        if (stream != null)
-        {
-            await EndStream(stream.StreamId);
-        }
+        var existingStream = _dbContext.Streams.Where(s => s.Streamer.UserId == user.UserId).SingleOrDefault();
+        if (existingStream != null) await EndStream(existingStream.StreamId);
 
-        var actualUser = await _dbContext.Users.FindAsync(user.UserId);
-        if (actualUser == null) throw new UserNotFoundException();
-        
-        var thumbnail = await _dbContext.Thumbnails.FindAsync(body.ThumbnailId);
+        var streamer = await _dbContext.Users.FindAsync(user.UserId);
+        if (streamer == null) throw new UserNotFoundException();
+
+        // Try to find the thumbnail specified in the body, or the default "NotFound" thumbnail if it is not found
+        var thumbnail = await _dbContext.Thumbnails.FindAsync(body.ThumbnailId) ??
+                        await _dbContext.Thumbnails.Where(t => t.ThumbnailName == "NotFound").SingleOrDefaultAsync();
+
+        // If the thumbnail was not found, throw an exception
+        if (thumbnail == null) throw new ThumbnailNotFoundException();
+
         string streamId = Guid.NewGuid().ToString();
-        stream = new Stream
+        var stream = new Stream
         {
             StreamId = streamId,
             IsActive = true,
-            Streamer = actualUser,
+            Streamer = streamer,
             StreamTitle = body.StreamTitle,
             Thumbnail = thumbnail,
         };
@@ -170,6 +173,5 @@ public class StreamService : IStreamService
         }).ToListAsync();
 
         return streams;
-
     }
 }

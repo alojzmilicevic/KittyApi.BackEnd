@@ -27,3 +27,9 @@ public class StreamNotLiveException : Exception, IServiceException
     public string ErrorMessage => "Stream is not live";
 }
 
+public class ThumbnailNotFoundException : Exception, IServiceException
+{
+    public HttpStatusCode StatusCode => HttpStatusCode.BadRequest;
+    public string ErrorCode => "Stream.IncorrectThumbnail";
+    public string ErrorMessage => "Incorrect thumbnail";
+}
