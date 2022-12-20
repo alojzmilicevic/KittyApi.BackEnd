@@ -1,5 +1,7 @@
 ﻿using KittyAPI.Dto;
 using KittyAPI.Models;
+using KittyAPI.Settings;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -16,12 +18,12 @@ public interface IAuthService
 public class AuthService : IAuthService
 {
     private readonly DataContext _dbContext;
-    private readonly IConfiguration _config;
+    private readonly JwtSettings _jwtSettings;
 
-    public AuthService(DataContext dbContext, IConfiguration config)
+    public AuthService(DataContext dbContext, IOptions<JwtSettings> options)
     {
         _dbContext = dbContext;
-        _config = config;
+        _jwtSettings = options.Value;
     }
 
     public async Task<User> AuthenticateAsync(UserLoginDto userLogin)
@@ -39,7 +41,7 @@ public class AuthService : IAuthService
 
     public string GenerateToken(User user)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
@@ -53,8 +55,8 @@ public class AuthService : IAuthService
         };
 
         var token = new JwtSecurityToken(
-            _config["Jwt:Issuer"],
-            _config["Jwt:Audience"],
+            _jwtSettings.Issuer,
+            _jwtSettings.Audience,
             claims,
             signingCredentials: credentials
         );

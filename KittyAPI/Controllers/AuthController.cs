@@ -10,8 +10,9 @@ namespace KittyAPI.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private IAuthService _authService;
-    private IUserService _userService;
+    private readonly IAuthService _authService;
+    private readonly IUserService _userService;
+    
     public AuthController([FromServices] IAuthService authService, [FromServices] IUserService userService)
     {
         _authService = authService;

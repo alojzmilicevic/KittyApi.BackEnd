@@ -10,41 +10,18 @@ using KittyAPI.Services;
 using KittyAPI.Hubs;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using KittyAPI.Errors;
+using KittyAPI.Settings;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-ConfigureDependencyInjection(builder.Services);
+builder.Services.AddApplicationServices(builder.Configuration);
 AddServices(builder);
-ConfigureAuth(builder);
+builder.Services.ConfigureAuth(builder.Configuration);
 
 var app = builder.Build();
 ConfigureMiddleware(app);
 SeedData(app);
-
-
-static List<string> GetAllowedOrigins()
-{
-    List<string> allowedClients = new() { "localhost", "192.168.50.115", "192.168.50.71" };
-    List<string> allowedOrigins = new() { };
-
-    allowedClients.ForEach(client =>
-    {
-        allowedOrigins.Add($"http://{client}:3000");
-        allowedOrigins.Add($"https://{client}:3000");
-    });
-    
-    return allowedOrigins;
-}
-
-static void ConfigureDependencyInjection(IServiceCollection services)
-{
-    services.AddTransient<DataSeeder>();
-    services.AddTransient<IUserService, UserService>();
-    services.AddTransient<IAuthService, AuthService>();
-    services.AddTransient<IStreamService, StreamService>();
-    services.AddTransient<IHubService, HubService>();
-    services.AddSingleton<ProblemDetailsFactory, CustomProblemDetailsFactory>();
-}
 
 static void AddServices(WebApplicationBuilder builder)
 {
@@ -88,54 +65,7 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddRouting(options => options.LowercaseUrls = true);
 }
 
-static void ConfigureAuth(WebApplicationBuilder builder)
-{
-    var services = builder.Services;
 
-    services.AddCors(options =>
-    {
-        List<string> allowedOrigins = GetAllowedOrigins();
-
-        options.AddPolicy("ClientPermission", policy =>
-        {
-            policy.AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowAnyOrigin();
-        });
-    });
-
-    services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = false,
-            ValidateIssuerSigningKey = false,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        };
-
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                var accessToken = context.Request.Query["token"];
-
-                // If the request is for our hub...
-                var path = context.HttpContext.Request.Path;
-                if (!string.IsNullOrEmpty(accessToken) &&
-                    (path.StartsWithSegments("/chathub")))
-                {
-                    // Read the token out of the query string
-                    context.Token = accessToken;
-                }
-                return Task.CompletedTask;
-            }
-        };
-    });
-}
 
 static void ConfigureMiddleware(WebApplication app)
 {
@@ -151,7 +81,8 @@ static void ConfigureMiddleware(WebApplication app)
     });
     app.UseCors("ClientPermission");
     app.UseSwagger();
-    app.UseSwaggerUI(c => {
+    app.UseSwaggerUI(c =>
+    {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "KittyAPI V1");
         c.RoutePrefix = string.Empty;
     });
@@ -172,5 +103,89 @@ static void SeedData(IHost app)
     {
         var service = scope.ServiceProvider.GetService<DataSeeder>();
         service.Seed();
+    }
+}
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services, ConfigurationManager configuration)
+    {
+        services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+
+        services.AddTransient<DataSeeder>();
+        services.AddTransient<IUserService, UserService>();
+        services.AddTransient<IAuthService, AuthService>();
+        services.AddTransient<IStreamService, StreamService>();
+        services.AddTransient<IHubService, HubService>();
+        services.AddSingleton<ProblemDetailsFactory, CustomProblemDetailsFactory>();
+
+        return services;
+    }
+
+    public static IServiceCollection ConfigureAuth(this IServiceCollection services, ConfigurationManager configuration)
+    {
+        var jwtSettings = new JwtSettings();
+        configuration.Bind(JwtSettings.SectionName, jwtSettings);
+        services.AddSingleton(Options.Create(jwtSettings));
+
+        services.AddCors(options =>
+        {
+            List<string> allowedOrigins = GetAllowedOrigins();
+
+            options.AddPolicy("ClientPermission", policy =>
+            {
+                policy.AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowAnyOrigin();
+            });
+        });
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = false,
+                ValidateIssuerSigningKey = false,
+                ValidIssuer = jwtSettings.Issuer,
+                ValidAudience = jwtSettings.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+            };
+
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["token"];
+
+                    // If the request is for our hub...
+                    var path = context.HttpContext.Request.Path;
+                    if (!string.IsNullOrEmpty(accessToken) &&
+                        (path.StartsWithSegments("/chathub")))
+                    {
+                        // Read the token out of the query string
+                        context.Token = accessToken;
+                    }
+                    return Task.CompletedTask;
+                }
+            };
+        });
+
+        return services;
+    }
+
+    static List<string> GetAllowedOrigins()
+    {
+        List<string> allowedClients = new() { "localhost", "192.168.50.115", "192.168.50.71" };
+        List<string> allowedOrigins = new() { };
+
+        allowedClients.ForEach(client =>
+        {
+            allowedOrigins.Add($"http://{client}:3000");
+            allowedOrigins.Add($"https://{client}:3000");
+        });
+
+        return allowedOrigins;
     }
 }
