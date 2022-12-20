@@ -85,6 +85,7 @@ static void ConfigureMiddleware(WebApplication app)
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "KittyAPI V1");
         c.RoutePrefix = string.Empty;
+        c.InjectStylesheet("/swagger-ui/SwaggerDark.css");
     });
     app.UseHttpsRedirection();
     app.UseAuthentication();
