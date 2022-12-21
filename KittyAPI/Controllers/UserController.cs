@@ -1,11 +1,10 @@
-using System.Security.Claims;
 using KittyAPI.Dto;
+using KittyAPI.Dto.Auth;
 using KittyAPI.Errors;
 using KittyAPI.Models;
 using KittyAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace KittyAPI.Controllers;
 
@@ -14,15 +13,15 @@ namespace KittyAPI.Controllers;
 [ApiController]
 public class UserController : ControllerBase
 {
-    private IUserService _userService;
-    private readonly IAuthService _authService;
+    private readonly IUserService _userService;
     private readonly DataContext _dbContext;
+    private readonly ITokenService _tokenService;
 
-    public UserController([FromServices] IUserService userService, [FromServices] IAuthService authService, DataContext dbContext)
+    public UserController([FromServices] IUserService userService, DataContext dbContext, ITokenService tokenService)
     {
         _userService = userService;
-        _authService = authService;
         _dbContext = dbContext;
+        _tokenService = tokenService;
     }
 
     [HttpGet]
@@ -38,8 +37,6 @@ public class UserController : ControllerBase
         return Ok(currentUser);
     }
 
-
-    [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegisterDto userRegister)
     {
@@ -114,11 +111,11 @@ public class UserController : ControllerBase
         _dbContext.Update(user);
         _dbContext.SaveChanges();
 
-        var token = _authService.GenerateToken(user);
+        AuthenticationResult authResult = _tokenService.GenerateToken(user);
 
         return Ok(new RelogDto()
         {
-            Token = token,
+            AuthResult = authResult,
             User = new UserDetailDto()
             {
                 Username = user.Username,

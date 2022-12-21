@@ -13,5 +13,6 @@ public class User
     public string LastName { get; set; }
     public string PasswordHash { get; set; }
     public string PasswordSalt { get; set; }
+    public string RefreshToken { get; set; }
     public IList<StreamUser> Streams { get; set; }
 }

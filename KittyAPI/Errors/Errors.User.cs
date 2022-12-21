@@ -5,7 +5,6 @@ namespace KittyAPI.Errors;
 public class UserNotFoundException : Exception, IServiceException
 {
     public HttpStatusCode StatusCode => HttpStatusCode.NotFound;
-
     public string ErrorCode => "User.NotFound";
     public string ErrorMessage => "That user doesn't exist"; 
 }

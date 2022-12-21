@@ -1,66 +1,60 @@
 ﻿using KittyAPI.Dto;
+using KittyAPI.Dto.Auth;
 using KittyAPI.Models;
-using KittyAPI.Settings;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace KittyAPI.Services;
 
 public interface IAuthService
 {
-    string GenerateToken(User user);
-    Task<User> AuthenticateAsync(UserLoginDto userLogin);
+    Task<User> Authenticate(UserLoginDto userLogin);
+    User GetUserFromOldAuthenticationResult(AuthenticationResult oldAuth);
 }
 
 public class AuthService : IAuthService
 {
     private readonly DataContext _dbContext;
-    private readonly JwtSettings _jwtSettings;
+    private readonly ITokenService _tokenService;
+    private readonly IUserService _userService;
 
-    public AuthService(DataContext dbContext, IOptions<JwtSettings> options)
+    public AuthService(DataContext dbContext, ITokenService tokenService, IUserService userService)
     {
         _dbContext = dbContext;
-        _jwtSettings = options.Value;
+        _tokenService = tokenService;
+        _userService = userService;
     }
 
-    public async Task<User> AuthenticateAsync(UserLoginDto userLogin)
+    public async Task<User> Authenticate(UserLoginDto userLogin)
     {
         var user = await _dbContext.Users.Where(x => x.Email == userLogin.UserName).SingleOrDefaultAsync();
 
         if (user == null) return null;
 
-        var validPassword = PasswordService.VerifyHashSHA512(userLogin.Password, Convert.FromBase64String(user.PasswordHash), Convert.FromBase64String(user.PasswordSalt));
+        var validPassword = PasswordService.VerifyHashSHA512(
+            userLogin.Password,
+            Convert.FromBase64String(user.PasswordHash),
+            Convert.FromBase64String(user.PasswordSalt)
+        );
 
         if (!validPassword) return null;
 
         return user;
     }
 
-    public string GenerateToken(User user)
+    public User GetUserFromOldAuthenticationResult(AuthenticationResult oldAuth)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+        var userId = _tokenService.ExtractUserIdFromOldToken(oldAuth.AccessToken);
 
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.GivenName, user.FirstName),
-            new Claim(ClaimTypes.Surname, user.LastName),
-            new Claim(ClaimTypes.Role, user.Role),
-            new Claim(ClaimTypes.NameIdentifier, user.UserId),
-        };
+        if (userId == null) return null;
 
-        var token = new JwtSecurityToken(
-            _jwtSettings.Issuer,
-            _jwtSettings.Audience,
-            claims,
-            signingCredentials: credentials
-        );
+        User user = _userService.FindUser(userId);
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        if (user == null) return null;
+
+        // Check if the refresh token matches the one in the database
+        // Future improvement: If the refresh token doesn't match the users token
+        // then we probably have someone trying to hack the system using a stolen token.
+        if (user.RefreshToken != oldAuth.RefreshToken) return null;
+
+        return user;
     }
 }

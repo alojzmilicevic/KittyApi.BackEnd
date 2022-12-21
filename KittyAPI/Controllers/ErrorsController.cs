@@ -13,6 +13,7 @@ public class ErrorsController : ControllerBase
 
         int statusCode = StatusCodes.Status500InternalServerError;
         string message = "Unknown error occured";
+        string detail = "";
         switch (exception)
         {
             case IServiceException e:
@@ -20,10 +21,11 @@ public class ErrorsController : ControllerBase
                 HttpContext.Items[HttpContextItemKeys.ErrorCode] = e.ErrorCode;
                 message = e.ErrorMessage;
                 break;
+
             default:
                 break;
         }
 
-        return Problem(statusCode: statusCode, title: message);
+        return Problem(detail, statusCode: statusCode, title: message);
     }
 }

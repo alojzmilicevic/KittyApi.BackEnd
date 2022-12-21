@@ -7,9 +7,9 @@ namespace KittyAPI.Services;
 
 public interface IUserService
 {
-    User FindUser(string id);
-    UserDetailDto GetUserFromContext(HttpContext context);
-    UserDetailDto GetUserById(string userId);
+    public User FindUser(string id);
+    public UserDetailDto GetUserFromContext(HttpContext context);
+    public void UpdateUser(User user);
 }
 public class UserService : IUserService
 {
@@ -26,9 +26,7 @@ public class UserService : IUserService
 
     public UserDetailDto GetUserFromContext(HttpContext context)
     {
-        var identity = context.User.Identity as ClaimsIdentity;
-
-        if (identity == null) return null;
+        if (context.User.Identity is not ClaimsIdentity identity) return null;
 
         var userClaims = identity.Claims;
 
@@ -51,7 +49,35 @@ public class UserService : IUserService
         {
             throw new UserNotFoundException();
         }
-        
+
+        return CreateUserDetailDto(user);
+    }
+
+    public UserDetailDto GetUserByUsername(string username)
+    {
+        var user = _dbContext.Users.Where(x => x.Username == username).SingleOrDefault();
+
+        if (user == null)
+        {
+            throw new UserNotFoundException();
+        }
+
+        return CreateUserDetailDto(user);
+    }
+
+    public void UpdateUser(User user)
+    {
+        if (user == null)
+        {
+            throw new UserNotFoundException();
+        }
+
+        _dbContext.Users.Update(user);
+        _dbContext.SaveChanges();
+    }
+
+    private UserDetailDto CreateUserDetailDto(User user)
+    {
         return new UserDetailDto()
         {
             Username = user.Username,

@@ -1,4 +1,5 @@
 using KittyAPI.Dto;
+using KittyAPI.Dto.Auth;
 using KittyAPI.Errors;
 using KittyAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -12,32 +13,44 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IUserService _userService;
-    
-    public AuthController([FromServices] IAuthService authService, [FromServices] IUserService userService)
+    private readonly ITokenService _tokenService;
+
+    public AuthController([FromServices] IAuthService authService, [FromServices] IUserService userService, ITokenService tokenService)
     {
         _authService = authService;
         _userService = userService;
+        _tokenService = tokenService;
     }
 
     [AllowAnonymous]
     [HttpPost("login")]
-    public async Task<IActionResult> LoginAsync([FromBody] UserLoginDto userLogin)
+    public async Task<IActionResult> Login([FromBody] UserLoginDto userLogin)
     {
-        var user = await _authService.AuthenticateAsync(userLogin);
+        var user = await _authService.Authenticate(userLogin);
 
-        if (user != null)
-        {
-            var token = _authService.GenerateToken(user);
-            var userDetail = _userService.GetUserById(user.UserId);
+        if (user == null) throw new UserNotFoundException();
 
-            var response = new
-            {
-                token,
-                user = userDetail
-            };
-            return Ok(response);
-        }
+        AuthenticationResult authResult = _tokenService.GenerateToken(user);
 
-        throw new UserNotFoundException();
+        user.RefreshToken = authResult.RefreshToken;
+        _userService.UpdateUser(user);
+
+        return Ok(authResult);
+    }
+
+    [AllowAnonymous]
+    [HttpPost("refresh")]
+    public IActionResult RefreshToken([FromBody] AuthenticationResult oldAuth)
+    {
+        var user = _authService.GetUserFromOldAuthenticationResult(oldAuth);
+
+        if (user == null) throw new TokenValidationException();
+
+        AuthenticationResult auth = _tokenService.GenerateToken(user);
+
+        user.RefreshToken = auth.RefreshToken;
+        _userService.UpdateUser(user);
+
+        return Ok(auth);
     }
 }

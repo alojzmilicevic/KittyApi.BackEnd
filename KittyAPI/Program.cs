@@ -70,22 +70,19 @@ static void AddServices(WebApplicationBuilder builder)
 static void ConfigureMiddleware(WebApplication app)
 {
     app.UseStaticFiles();
-    app.Use(async (context, next) =>
-    {
-        await next();
-
-        if (context.Response.StatusCode == (int)HttpStatusCode.Unauthorized)
-        {
-            await context.Response.WriteAsync("Token Validation Has Failed. Request Access Denied");
-        }
-    });
     app.UseCors("ClientPermission");
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "KittyAPI V1");
         c.RoutePrefix = string.Empty;
-        c.InjectStylesheet("/swagger-ui/SwaggerDark.css");
+        DateTime currentTime = DateTime.Now;
+        DateTime tenPM = new(currentTime.Year, currentTime.Month, currentTime.Day, 22, 0, 0);
+
+        if(currentTime >= tenPM)
+        {
+            c.InjectStylesheet("/swagger-ui/SwaggerDark.css");
+        }
     });
     app.UseHttpsRedirection();
     app.UseAuthentication();
@@ -100,11 +97,9 @@ static void SeedData(IHost app)
 {
     var scopedFactory = app.Services.GetService<IServiceScopeFactory>();
 
-    using (var scope = scopedFactory.CreateScope())
-    {
-        var service = scope.ServiceProvider.GetService<DataSeeder>();
-        service.Seed();
-    }
+    using var scope = scopedFactory.CreateScope();
+    var service = scope.ServiceProvider.GetService<DataSeeder>();
+    service.Seed();
 }
 
 public static class DependencyInjection
@@ -115,6 +110,7 @@ public static class DependencyInjection
 
         services.AddTransient<DataSeeder>();
         services.AddTransient<IUserService, UserService>();
+        services.AddTransient<ITokenService, TokenService>();
         services.AddTransient<IAuthService, AuthService>();
         services.AddTransient<IStreamService, StreamService>();
         services.AddTransient<IHubService, HubService>();
@@ -145,13 +141,14 @@ public static class DependencyInjection
         {
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                ValidateLifetime = false,
-                ValidateIssuerSigningKey = false,
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
                 ValidIssuer = jwtSettings.Issuer,
                 ValidAudience = jwtSettings.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+                ClockSkew = TimeSpan.Zero
             };
 
             options.Events = new JwtBearerEvents
