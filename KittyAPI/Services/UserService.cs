@@ -34,10 +34,8 @@ public class UserService : IUserService
         {
             Username = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.Name)?.Value,
             UserId = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.NameIdentifier)?.Value,
-            Email = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.Email)?.Value,
             FirstName = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.GivenName)?.Value,
             LastName = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.Surname)?.Value,
-            Role = userClaims.FirstOrDefault(o => o.Type == ClaimTypes.Role)?.Value,
         };
     }
 
@@ -82,10 +80,8 @@ public class UserService : IUserService
         {
             Username = user.Username,
             UserId = user.UserId,
-            Email = user.Email,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Role = user.Role,
         };
     }
 }

@@ -40,7 +40,7 @@ public class UserController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserRegisterDto userRegister)
     {
-        var userExists = await _dbContext.Users.AnyAsync(x => x.Email == userRegister.Email || x.Username == userRegister.Username);
+        var userExists = await _dbContext.Users.AnyAsync(x => x.Username == userRegister.Username);
 
         if (userExists)
         {
@@ -50,14 +50,12 @@ public class UserController : ControllerBase
         PasswordService.ComputeHashSHA512(userRegister.Password, out byte[] passwordHash, out byte[] passwordSalt);
         var user = new User()
         {
-            Email = userRegister.Email,
             Username = userRegister.Username,
             UserId = Guid.NewGuid().ToString(),
             FirstName = userRegister.FirstName,
             LastName = userRegister.LastName,
             PasswordHash = Convert.ToBase64String(passwordHash),
             PasswordSalt = Convert.ToBase64String(passwordSalt),
-            Role = "User",
         };
 
         await _dbContext.Users.AddAsync(user);
@@ -120,10 +118,8 @@ public class UserController : ControllerBase
             {
                 Username = user.Username,
                 UserId = user.UserId,
-                Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Role = user.Role
             }
         });
     }
