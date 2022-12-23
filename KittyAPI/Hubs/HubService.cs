@@ -38,7 +38,7 @@ public class HubService : IHubService
     public async Task SendStreamsUpdatedMessage(List<StreamInfoDto> streams)
     {
         var message = new StreamsUpdatedMessage(streams);
-
+        
         await _hubContext.Clients.Group(ClientType.Viewer).ReceiveMessage(message);
     }
 }

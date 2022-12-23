@@ -20,11 +20,9 @@ public class DataSeeder
                 new User()
                 {
                     UserId="alojzId",
-                    Username = "alomi136",
-                    Email = "a",
+                    Username = "a",
                     FirstName = "Alojz",
                     LastName = "Milicevic",
-                    Role = "Administrator",
                     PasswordHash = "MFvfOBskejHs/KNaRZvEf8On3/qlI/JUPrlOznKr4oxHS15MMVnSENkV8xmxo3uI3Cu/GOHtQWKbjalnnNTrbA==",
                     PasswordSalt = "hZNSSOJ8Qqy3Iqp0G2p1exkPcWnWySD5A9qxahVbJ40rm37twvbM8k2AemfmMSjy04kQQBe0g+CF18PDr17hmoXEo3iCVdKNgWxAvr4guV+fLqyuTK0dcDR8Ai4tEy53AZzyEQHTbateHzwPDlx0fHgy6O/GH2ST/R64yLCfqrc=",
                 },
@@ -32,8 +30,6 @@ public class DataSeeder
                 {
                     UserId="almaId",
                     Username = "almce",
-                    Email = "alma",
-                    Role = "User",
                     LastName = "Cederblad",
                     PasswordHash = "FDxRO4rMTxEmKu9YAhu929SLjYxwsPrg/uXJhUW11fE+cTlUbK+9mH07e1sf62kShOwUoSGVzbLjgXV85WQLoQ==",
                     PasswordSalt="aoQ2sK9yu92pKLv4OoLXW+12JD0pzjGEEzX01lWsKJdRXq83P+8ZrZD36v5397PVhygyPnZfLgV62LP6bbb8owPCDzPBrrAwI8S+UsCODX4Ku+bg7nc46uK3s0AIEMGItPZrH69hbDHehRkCU91uGKTBgwxINVuTB/21rcSvEQk=", FirstName = "Alma",
@@ -42,10 +38,8 @@ public class DataSeeder
                 {
                     UserId="stringId",
                     Username = "string",
-                    Email = "string",
                     FirstName = "s",
                     LastName = "stringson",
-                    Role = "Admin",
                     PasswordHash = "MFvfOBskejHs/KNaRZvEf8On3/qlI/JUPrlOznKr4oxHS15MMVnSENkV8xmxo3uI3Cu/GOHtQWKbjalnnNTrbA==",
                     PasswordSalt = "hZNSSOJ8Qqy3Iqp0G2p1exkPcWnWySD5A9qxahVbJ40rm37twvbM8k2AemfmMSjy04kQQBe0g+CF18PDr17hmoXEo3iCVdKNgWxAvr4guV+fLqyuTK0dcDR8Ai4tEy53AZzyEQHTbateHzwPDlx0fHgy6O/GH2ST/R64yLCfqrc="
                 }

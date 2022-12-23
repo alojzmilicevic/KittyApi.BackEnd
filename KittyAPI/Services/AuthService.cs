@@ -25,7 +25,7 @@ public class AuthService : IAuthService
 
     public async Task<User> Authenticate(UserLoginDto userLogin)
     {
-        var user = await _dbContext.Users.Where(x => x.Email == userLogin.UserName).SingleOrDefaultAsync();
+        var user = await _dbContext.Users.Where(x => x.Username== userLogin.Username).SingleOrDefaultAsync();
 
         if (user == null) return null;
 
