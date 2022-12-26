@@ -40,8 +40,8 @@ public class DataSeeder
                     Username = "string",
                     FirstName = "s",
                     LastName = "stringson",
-                    PasswordHash = "MFvfOBskejHs/KNaRZvEf8On3/qlI/JUPrlOznKr4oxHS15MMVnSENkV8xmxo3uI3Cu/GOHtQWKbjalnnNTrbA==",
-                    PasswordSalt = "hZNSSOJ8Qqy3Iqp0G2p1exkPcWnWySD5A9qxahVbJ40rm37twvbM8k2AemfmMSjy04kQQBe0g+CF18PDr17hmoXEo3iCVdKNgWxAvr4guV+fLqyuTK0dcDR8Ai4tEy53AZzyEQHTbateHzwPDlx0fHgy6O/GH2ST/R64yLCfqrc="
+                    PasswordHash = "7cofrx8jFs2QzXzoPpZV/FcPkdXocfqKsFVZt+VgC9xYpISzmmheZ0CKMOrgm+tpotsAcq9T0GqqYe14t2To8Q==",
+                    PasswordSalt = "nqD//P9Xx+tBi3tciLyRUy/nfiDs4qrRfOUHDBWHd9ELKENSC0TV3yfm0Ryxu81Gfr7ac6fdZbYqjzWy4VK/gpFLdHfzIPIedanuG9UNPfKk1/Bi3iU6MpDv/IRg/OLap65DbdqbdiFNt473lw6VaLHTjf6ZcZjdHR1j6hmorzA="
                 }
             };
 

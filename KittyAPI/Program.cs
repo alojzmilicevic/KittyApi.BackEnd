@@ -23,6 +23,8 @@ var app = builder.Build();
 ConfigureMiddleware(app);
 SeedData(app);
 
+app.Run();
+
 static void AddServices(WebApplicationBuilder builder)
 {
     var services = builder.Services;
@@ -65,8 +67,6 @@ static void AddServices(WebApplicationBuilder builder)
     builder.Services.AddRouting(options => options.LowercaseUrls = true);
 }
 
-
-
 static void ConfigureMiddleware(WebApplication app)
 {
     app.UseStaticFiles();
@@ -90,7 +90,6 @@ static void ConfigureMiddleware(WebApplication app)
     app.MapControllers();
     app.MapHub<ChatHub>("/chatHub");
     app.UseExceptionHandler("/error");
-    app.Run();
 }
 
 static void SeedData(IHost app)
@@ -98,6 +97,9 @@ static void SeedData(IHost app)
     var scopedFactory = app.Services.GetService<IServiceScopeFactory>();
 
     using var scope = scopedFactory.CreateScope();
+    var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+    dataContext.Database.Migrate();
+    
     var service = scope.ServiceProvider.GetService<DataSeeder>();
     service.Seed();
 }
